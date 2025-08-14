@@ -9,6 +9,11 @@ using ToDoList.Models;
 
 namespace ToDoList.Service
 {
+    public interface ITokenService
+    {
+        string GenerateToken(AppUser user);
+        ClaimsPrincipal? ValidateToken(string token);
+    }
 
     public class TokenService : ITokenService
     {
@@ -30,8 +35,8 @@ namespace ToDoList.Service
 
                 var claims = new List<Claim>
                 {
-                    new Claim("userId", user.Id),          
-                    new Claim("email", user.Email ?? ""),  
+                    new Claim("userId", user.Id),
+                    new Claim("email", user.Email ?? ""),
                     new Claim(ClaimTypes.Name, user.UserName ?? ""),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };

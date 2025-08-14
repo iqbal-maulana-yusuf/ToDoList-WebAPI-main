@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 
 namespace ToDoList.Dtos.ToDoDto
 {
-    public class ToDoUpdateDto
+    public class ToDoResponsDto
     {
+        public int Id { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
         public bool? IsCompleted { get; set; }

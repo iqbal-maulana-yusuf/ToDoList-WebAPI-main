@@ -336,3 +336,4 @@ D:\BOOTCAMP\ToDoList-WebAPI-main\ToDoList\obj\Debug\net9.0\refint\ToDoList.dll
 D:\BOOTCAMP\ToDoList-WebAPI-main\ToDoList\obj\Debug\net9.0\ToDoList.pdb
 D:\BOOTCAMP\ToDoList-WebAPI-main\ToDoList\obj\Debug\net9.0\ToDoList.genruntimeconfig.cache
 D:\BOOTCAMP\ToDoList-WebAPI-main\ToDoList\obj\Debug\net9.0\ref\ToDoList.dll
+D:\BOOTCAMP\ToDoList-WebAPI-main\ToDoList\obj\Debug\net9.0\ToDoList.sourcelink.json

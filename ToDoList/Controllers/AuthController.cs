@@ -13,19 +13,22 @@ namespace ToDoList.Controllers
 {
     [Route("api/auth")]
     [ApiController]
+    [Authorize]
     public class AuthController : ControllerBase
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signinManager;
         private readonly ITokenService _tokenService;
+        private readonly IUserService _userService;
         private readonly IMapper _mapper;
 
-        public AuthController(UserManager<AppUser> userManager, IMapper mapper, SignInManager<AppUser> signinManager, ITokenService tokenService)
+        public AuthController(UserManager<AppUser> userManager, IMapper mapper, SignInManager<AppUser> signinManager, ITokenService tokenService, IUserService userService)
         {
             _userManager = userManager;
             _mapper = mapper;
             _signinManager = signinManager;
             _tokenService = tokenService;
+            _userService = userService;
         }
 
         [HttpPost("register")]
@@ -44,51 +47,90 @@ namespace ToDoList.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto requestDto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == requestDto.Email);
-            if (user == null) return Unauthorized("Invalid Email!");
-
-            var result = await _signinManager.CheckPasswordSignInAsync(user, requestDto.Password!, false);
-            if (!result.Succeeded) return Unauthorized("Incorrect Password!");
-
-            var responsDto = _mapper.Map<LoginResponsDto>(user);
-            var token = _tokenService.GenerateToken(user);
-
-
-            Response.Cookies.Append("jwt", token, new CookieOptions
+            try
             {
-                HttpOnly = true,
-                Secure = false, // Untuk development
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTime.UtcNow.AddDays(2), // Sesuaikan dengan expiry token
-                Domain = "localhost"
-            });
-            return Ok(new { message = "Login Berhasil", user = responsDto, token = token });
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+
+                var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == requestDto.Email);
+                if (user == null) return Unauthorized("Invalid Email!");
+
+                var result = await _signinManager.CheckPasswordSignInAsync(user, requestDto.Password!, false);
+                if (!result.Succeeded) return Unauthorized("Incorrect Password!");
+
+                var responsDto = _mapper.Map<LoginResponsDto>(user);
+                var token = _tokenService.GenerateToken(user);
+
+
+                Response.Cookies.Append("jwt", token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTime.UtcNow.AddDays(2),
+                    Domain = "localhost"
+                });
+                return Ok(new { message = "Login Berhasil", user = responsDto, token = token });
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex);
+            }
         }
 
         [HttpPost("logout")]
+        [Authorize]
         public IActionResult Logout()
         {
-            Response.Cookies.Delete("jwt");
-            return Ok(new { message = "Logout Berhasil" });
+            try
+            {
+                Response.Cookies.Delete("jwt");
+                return Ok(new { message = "Logout Berhasil" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
 
         [HttpGet("profile")]
-
-        [Authorize]  // Hanya bisa diakses jika user sudah login dengan JWT
+        [Authorize]
 
         public async Task<IActionResult> GetProfile()
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == userId);
-
-            return Ok(new
+            try
             {
-                UserId = userId,
-                Email = user!.Email
-            });
+                var userId = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+                var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == userId);
+
+                return Ok(new
+                {
+                    UserId = userId,
+                    Email = user!.Email
+                });
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpGet("users")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            try
+            {
+                var userId = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+                var users = await _userService.GetAll();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex);
+            }
         }
 
     }

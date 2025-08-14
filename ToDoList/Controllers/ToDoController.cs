@@ -1,69 +1,112 @@
-using Microsoft.AspNetCore.Authorization;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ToDoList.Dtos.ToDoDto;
-using ToDoList.Interface;
-using ToDoList.Services;
+using ToDoList.Service;
 
 namespace ToDoList.Controllers
 {
+
     [Route("api/todo")]
+    
     [ApiController]
-    [Authorize]
     public class ToDoController : ControllerBase
     {
-        private readonly IToDoService _toDoService;
+        private IToDoService _todoService;
 
         public ToDoController(IToDoService toDoService)
         {
-            _toDoService = toDoService;
+            _todoService = toDoService;
+
         }
 
-        // GET: semua ToDo user
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+
+        public async Task<IActionResult> GetAllToDo()
         {
-            var userId = User.Claims.First(c => c.Type == "userId").Value;
-            var todos = await _toDoService.GetAllUserToDosAsync(userId);
-            return Ok(todos);
+            try
+            {
+                var userId = User.Claims.First(c => c.Type == "userId").Value;
+                var todos = await _todoService.GetAll(userId);
+                return Ok(todos);
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex);
+            }
         }
 
-        // GET: single ToDo
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        [Route("{id}")]
+        [HttpGet]
+        
+
+        public async Task<IActionResult> GetToDoById([FromRoute] int id)
         {
-            var userId = User.Claims.First(c => c.Type == "userId").Value;
-            var todo = await _toDoService.GetToDoByIdAsync(id, userId);
-            if (todo == null) return NotFound();
-            return Ok(todo);
+            try
+            {
+                var userId = User.Claims.First(c => c.Type == "userId").Value;
+                var todo = await _todoService.GetById(userId, id);
+                if (todo == null)
+                {
+                    return NotFound();
+                }
+                return Ok(todo);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
-        // POST: create ToDo
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ToDoCreateDto dto)
+        public async Task<IActionResult> CreateToDo([FromBody] ToDoCreateRequestDto createDto)
         {
-            var userId = User.Claims.First(c => c.Type == "userId").Value;
-            var todo = await _toDoService.CreateToDoAsync(dto, userId);
-            return Ok(todo);
+            try
+            {
+                var userId = User.Claims.First(c => c.Type == "userId").Value;
+                var todo = await _todoService.Create(createDto, userId);
+                return Ok(todo);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
-        // PUT: update ToDo
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] ToDOUpdateDto dto)
+        public async Task<IActionResult> UpdateToDo([FromBody] ToDoUpdateDto updateDto, int id)
         {
-            var userId = User.Claims.First(c => c.Type == "userId").Value;
-            var updatedTodo = await _toDoService.UpdateToDoAsync(id, dto, userId);
-            if (updatedTodo == null) return NotFound();
-            return Ok(updatedTodo);
+            try
+            {
+                var userId = User.Claims.First(c => c.Type == "userId").Value;
+                var todo = await _todoService.Update(updateDto, userId, id);
+                return Ok(todo);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+
         }
 
-        // DELETE: hapus ToDo
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> DeleteToDo(int id)
         {
-            var userId = User.Claims.First(c => c.Type == "userId").Value;
-            var success = await _toDoService.DeleteToDoAsync(id, userId);
-            if (!success) return NotFound();
-            return Ok(new { message = "ToDo deleted successfully" });
+            try
+            {
+                var userId = User.Claims.First(c => c.Type == "userId").Value;
+                await _todoService.Delete(userId, id);
+                return Ok("Success Deleted");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
+
     }
 }

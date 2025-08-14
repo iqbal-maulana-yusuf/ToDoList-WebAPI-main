@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ToDoList.Dtos.ToDoDto
 {
-    public class ToDoCreateDto
+    public class ToDoCreateRequestDto
     {
         public string Title { get; set; } = null!;
         public string? Description { get; set; }

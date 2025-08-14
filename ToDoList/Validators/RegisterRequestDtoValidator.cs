@@ -9,9 +9,9 @@ using ToDoList.Dtos.RegisterDto;
 namespace ToDoList.Validators
 {
 
-    public class RegisterValidator : AbstractValidator<RegisterRequestDto>
+    public class RegisterRequestDtoValidator : AbstractValidator<RegisterRequestDto>
     {
-        public RegisterValidator()
+        public RegisterRequestDtoValidator()
         {
             RuleFor(x => x.Username)
                 .NotEmpty().WithMessage("Username wajib diisi.")
